@@ -1,7 +1,7 @@
 parameters:
-  name: nodeVersion
-  type: string
-  default: 20
+  - name: nodeVersion
+    type: string
+    default: 20
 
 steps:
   - task: UseNode@1
@@ -9,8 +9,7 @@ steps:
     inputs:
       version: ${{ parameters.nodeVersion }}
 
-  - bash: |
-      cp publish.npmrc .npmrc
+  - script: echo 'registry=$(REGISTRY_URL)' >> .npmrc
     displayName: "Configure .npmrc to use CFS"
 
   - task: npmAuthenticate@0

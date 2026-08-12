@@ -19,6 +19,15 @@ variables:
     value: production,externalfacing
   - name: ReleaseBranch
     value: rnbot/beachball/rel$(Build.BuildId)
+  # This is also used in prep-node.yml to configure .npmrc
+  - name: REGISTRY_URL
+    value: https://pkgs.dev.azure.com/office/_packaging/Office/npm/registry/
+  - name: YARN_NPM_REGISTRY_SERVER
+    value: $(REGISTRY_URL)
+  - name: YARN_NPM_ALWAYS_AUTH
+    value: 1
+  - name: YARN_NPMRC_AUTH_ENABLED
+    value: 1
 
 parameters:
   - name: pools
@@ -32,7 +41,7 @@ parameters:
         os: linux
       - name: Azure Pipelines
         vmImage: macos-latest
-        os: macOS        
+        os: macOS
   - name: nodeVersions
     type: object
     default:
@@ -91,7 +100,7 @@ extends:
                   condition: and(succeeded(), eq('${{ pool.os }}', 'windows'))
 
     - stage: Build
-      dependsOn: 
+      dependsOn:
        - Verification # Make sure we build and pass tests on all platforms and node versions before publishing
       jobs:
         - job: Publish
@@ -106,7 +115,7 @@ extends:
                artifactName: NpmPackedTarballs
                displayName: 'Publish npm pack artifacts'
                condition: succeededOrFailed()
-              
+
           steps:
             - checkout: self
 
@@ -124,7 +133,7 @@ extends:
               inputs:
                 azureSubscription: 'CXE - RNW CI & Anomaly-Detection (8735cced-c5b3-4da5-867b-2c3f680273c8)'
                 KeyVaultName: rnw-keyvault
-                SecretsFilter: 'githubAuthToken' # string. Required. Secrets filter. Default: *.  
+                SecretsFilter: 'githubAuthToken'
               displayName: Obtaining secrets for publish
 
             - script: |
@@ -300,7 +309,7 @@ extends:
                 buildType: 'current'
                 artifact: 'NpmPackedTarballs'
                 path: '$(Pipeline.Workspace)\published-packages'
-            
+
             - task: 'SFP.release-tasks.custom-build-release-task.EsrpRelease@9'
               displayName: 'ESRP Release to npmjs.com'
               inputs:
